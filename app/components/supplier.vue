@@ -1,3 +1,4 @@
+
 <template>
     <v-form @submit.prevent v-model="formValid" validate-on="input">
       <h2 class="card-title">{{ t('supplierDataTitle') }}</h2>
@@ -75,7 +76,8 @@
       </template>
       
       <h4 class="mt-5">{{ t('country') }} <small class="required">{{ t('required') }}</small></h4>
-      <v-select
+      <v-autocomplete
+        chips       
         v-model="data.country"
         :placeholder="t('selectOption')"
         :items="master.m('country')"  
@@ -83,23 +85,25 @@
         item-value="value" 
         variant="outlined"
         :rules="[rules.required]"
+        @update:modelValue="filterOptions"
         required
-      ></v-select>
+      ></v-autocomplete>
       <v-row >
-        <v-col>
+        <v-col v-if="typeCif?.length">
             <h4>{{ t('taxIdentificationType') }} <small class="required">{{ t('required') }}</small></h4>
-            <v-select
+            <v-autocomplete
+                chips      
                 v-model="data.type_cif"
-                 :placeholder="!data.country 
+                :placeholder="!data.country 
                   ? t('selectCountryFirst') 
                   : t('selectOption')"
-                :items="master.mFilter('type_cif', data.country)"  
+                :items="typeCif"  
                 :item-title="item => t(item.label)" 
                 item-value="value" 
                 variant="outlined"
-                :rules="[rules.required]"
-                required                
-            ></v-select>
+                :rules="typeCif?.length ? [rules.required] : []"
+                :required="typeCif?.length > 0"
+            ></v-autocomplete>
         </v-col>
         <v-col>
             <h4>{{ t('companyID') }} <small class="required">{{ t('required') }}</small></h4>  
@@ -113,7 +117,28 @@
         </v-col>
       </v-row>
       
-
+      <template v-if="showVendorType">
+        <h4>{{t('vendor_type')}} <small class="required">{{ t('required') }}</small></h4>
+          <v-autocomplete
+            chips                   
+            v-model="data.vendor_type"               
+            :items="list_vendor_type"  
+            :item-title="item => t(item.label)" 
+            item-value="value" 
+            variant="outlined"
+            :rules=" showVendorType? [rules.required]: []"
+        ></v-autocomplete>     
+      </template>
+      <h4>Grupo de tesorería<small class="required">{{ t('required') }}</small></h4>
+          <v-autocomplete
+            chips                   
+            v-model="data.treasury_group"               
+            :items="master.m('treasury_group')"  
+            :item-title="item => t(item.label)" 
+            item-value="value" 
+            variant="outlined"
+            :rules="[rules.required]"
+      ></v-autocomplete> 
       
 
       <h4>{{ t('web') }}</h4>  
@@ -125,32 +150,24 @@
 
       <h4>{{ t('preferredLanguageForCommunication') }} <small class="required">{{ t('required') }}</small></h4>
       <v-radio-group v-model="data.prefered_lang">
-        <v-radio color="#005CB9" :label="t('spanish')" value="0"></v-radio>
-        <v-radio color="#005CB9" :label="t('english')" value="1"></v-radio>
-        <v-radio color="#005CB9" :label="t('italian')" value="2"></v-radio>
+        <v-radio color="#005CB9" :label="t('spanish')" :value="1"></v-radio>
+        <v-radio color="#005CB9" :label="t('english')" :value="2"></v-radio>
       </v-radio-group>
 
-      <h4>{{ t('contactEmail') }} <small class="required">{{ t('required') }}</small></h4>  
-      <p class="helper">{{t('contactEmailHelper') }}</p>
-      <v-text-field 
-        variant="outlined" 
-        v-model="data.sampol_mail_address" 
-        :placeholder="t('writeYourAnswer')" 
-        :rules="[rules.required, rules.email_sampol]"
-        required>      
-      </v-text-field>
-    </v-form>
+      </v-form>
 </template>
 <script setup>
 import { useMasterStore } from '~/stores/master'
-
 const master = useMasterStore()
-</script>
+await master.fetchCode('country')
+await master.fetchCode('treasury_group')
 
+</script>
 <script>
+
 import { useT } from '~/composables/useT'
 import SupplierData from '~/models/SupplierData.js'
-
+import {useMaster} from '~/composables/services/master'
 
 export default {
   name: 'Supplier',
@@ -159,7 +176,10 @@ export default {
   data () {
     return {    
         data: this.modelValue ? { ...this.modelValue } : new SupplierData(),
-        formValid: false
+        formValid: false,
+        typeCif: [],
+        list_vendor_type: [],
+        showVendorType: false
 
     }
   },
@@ -171,7 +191,7 @@ export default {
   },
   watch:{
     formValid (val) {
-      this.$emit('valid', val)
+      this.$emit('valid', val, 1)
     },
     data: {
       handler (val) {
@@ -196,7 +216,17 @@ export default {
     }
   },
   methods: {    
-   
+   async filterOptions(){
+        const master = useMaster()
+        const rpt = await master.get_all_values_filter('type_cif',this.data.country)
+        this.typeCif = rpt?.response ?? []
+        const rptaL = await master.get_all_values_filter('vendor_type', this.data.country)       
+        this.list_vendor_type = rptaL?.response ?? []
+        this.showVendorType = rptaL?.status;
+        if (!rptaL?.status){
+          this.data.vendor_type = null
+        }      
+   },
   },
   computed: {
     t() {
@@ -206,15 +236,12 @@ export default {
         return {
             required: v => !!v ||  this.t('required'),
             minLength: n => v =>
-            (v && v.length >= n) || this.t('rules_minLength'),
+            (v && v.length >= n) || this.t('rules_minLength', {min: n}),
             maxLength: max => v =>
             (!v || v.length <= max) || this.t('rules_maxLength', {max}),
             email_sampol: v => (/^[^\s@]+@(sampol\.com|sampoldistribucion\.es)$/i.test(v)) || this.t('rules_emailSampol'),
         }
     }
-  },
-  mounted () {
-
   }
 }
 

@@ -1,23 +1,26 @@
 <template>
-  <v-card class="ma-3 pa-2">
+  <v-card class="ma-3 pa-2" variant ="text">
     <v-row justify="space-between">
       <v-col>
           <h2 class="card-subtitle mt-3">{{ t('contactPerson') }}</h2>         
-          <v-alert v-if="items.length === 0" border="start" variant="outlined" border-color="error"  style="border-color: gainsboro" density="compact" icon="mdi-information-outline" class="mt-2 mb-9">
-            {{ t('mustAddAtLeastOneContact') }}
-          </v-alert>
-      </v-col>
-      <v-col cols="3">
+      </v-col>      
+    </v-row>  
+    <v-row>
+      <v-col cols="2">
         <v-btn
-          class="mt-3"
           prepend-icon="mdi-plus"
-          :text="t('addContact')"
+          :text="t('add')"
           @click="add"
           color="primary"
           variant="elevated"
         ></v-btn>
       </v-col>
-    </v-row>       
+      <v-col>
+        <v-alert v-if="items.length === 0" border="start" variant="outlined" border-color="error"  style="border-color: gainsboro" density="compact" icon="mdi-information-outline" class="">
+            {{ t('mustAddAtLeastOneContact') }}
+          </v-alert>
+      </v-col>
+    </v-row>     
    
     <v-data-table  class="mt-5" :items="items" :headers="headers" :no-data-text="t('noData')" v-if="items.length != 0">          
       <template v-slot:item.actions="{ item }">
@@ -107,12 +110,11 @@
                 >      
                 </v-text-field>
 
-                <h4>{{ t('preferredLanguageForCommunication') }} <small class="required">{{ t('required') }}</small></h4>
+                <!-- <h4>{{ t('preferredLanguageForCommunication') }} <small class="required">{{ t('required') }}</small></h4>
                 <v-radio-group v-model="data.prefered_lang" :rules="[rules.required]">
-                  <v-radio color="#005CB9" :label="t('spanish')" value="0"></v-radio>
-                  <v-radio color="#005CB9" :label="t('english')" value="1"></v-radio>
-                  <v-radio color="#005CB9" :label="t('italian')" value="2"></v-radio>
-                </v-radio-group>  
+                  <v-radio color="#005CB9" :label="t('spanish')" :value="1"></v-radio>
+                  <v-radio color="#005CB9" :label="t('english')" :value="2"></v-radio>
+                </v-radio-group>   -->
           </v-form>     
         </v-card-text>
 
@@ -130,6 +132,8 @@
 <script setup>
 import { useMasterStore } from '~/stores/master'
 const master = useMasterStore()
+await master.fetchCode('type_contact')
+
 </script>
 <script>
 import { useT } from '~/composables/useT'
@@ -168,7 +172,7 @@ export default {
       deep: true
     },
     'items.length'(val) {
-      this.$emit('valid', val > 0, 'valid_cont')
+      this.$emit('valid', val > 0)
     }
   },
   methods: { 
@@ -218,7 +222,6 @@ export default {
         { title:  this.t('contactType'), key: 'type' },  
         { title:  this.t('email'), key: 'email' },  
         { title:  this.t('phone'), key: 'phone_number' },  
-        { title: this.t('preferredLanguageForCommunication'), key: 'prefered_lang' },
         { title: this.t('actions'), key: 'actions', align: 'end', sortable: false }  
       ]
     }

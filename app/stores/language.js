@@ -22,7 +22,7 @@ export const useLanguageStore = defineStore('language', () => {
         return acc
       }, {})
 
-      const fallbackData = await traductions_per_lang(4)
+      const fallbackData = await traductions_per_lang(1)
       fallbackTraductions.value = fallbackData?.response.reduce((acc, item) => {
         acc[item.code] = item.value
         return acc

@@ -10,7 +10,7 @@
                     <v-btn
                         prepend-icon="mdi-plus"
                         rounded="lg"
-                        :text="t('add') + ' ' + t('bankAccount')"
+                        :text="t('add')"
                         color="primary"
                         variant="elevated"
                         @click="add"
@@ -51,31 +51,49 @@
                         </v-row>
                         <v-row>
                             <v-col>
+                                <v-checkbox 
+                                :label="t('principal')"
+                                variant="outlined" 
+                                v-model="data.principal" 
+                                :placeholder="t('writeYourAnswer')" >
+                                </v-checkbox>
+                            </v-col>
+                        </v-row>
+                        <v-row>
+                            <v-col>
                                 <h4>{{ t('bankAccountCountry') }} <small class="required">{{ t('required') }}</small></h4>
-                                <v-select
+                                
+                                <v-autocomplete
+        chips   
                                 v-model="data.bank_country"
                                 :placeholder="t('selectOption')"
                                 :items="master.m('country')"  
                                 :item-title="item => t(item.label)" 
                                 item-value="value" 
                                 variant="outlined"
+                                @update:modelValue="filterOptions"
+
                                 :rules="[rules.required]"
                                 required
-                                ></v-select>
+                                ></v-autocomplete>
                             </v-col>
 
                             <v-col>
-                                <h4>{{ t('bank') }} <small class="required">{{ t('required') }}</small></h4>
-                                <v-select
+                                <h4>{{ t('bank') }} <small class="required" v-if="list_banks?.length > 0">{{ t('required') }}</small></h4>
+                                    <v-autocomplete
+                                            chips     
                                     v-model="data.bank_name"
                                     :placeholder="t('selectOption')"
-                                    :items="master.m('bank_name')"  
-                                    :item-title="item => t(item.label)" 
-                                    item-value="value" 
+                                    :items="list_banks"  
+                                    :item-title="item => t(item.name)" 
+                                    item-value="name" 
                                     variant="outlined"
-                                    :rules="[rules.required]"
-                                    required
-                                ></v-select>
+                                    :rules="list_banks?.length>0 ? [rules.required] : []"
+                                    @update:modelValue="asignData"
+
+                                    :required="list_banks?.length > 0"
+                                ></v-autocomplete>
+                                <small>{{ data.bank_group }}</small>
                             </v-col>
 
                             <v-col >
@@ -104,7 +122,8 @@
                             </v-col>
                             <v-col>
                                 <h4>{{ t('currency') }} <small class="required">{{ t('required') }}</small></h4>
-                                <v-select
+                                 <v-autocomplete
+        chips   
                                     v-model="data.coin"
                                     :placeholder="t('selectOption')"
                                     :items="master.m('coins')"  
@@ -113,13 +132,13 @@
                                     variant="outlined"
                                     :rules="[rules.required]"
                                     required
-                                ></v-select>
+                                ></v-autocomplete>
                             </v-col> 
                              
                         </v-row>
                         <v-row>
                             <v-col>
-                                <h4>{{ t('currentAccountNumber') }} </h4>
+                                <h4>{{ t('currentAccountNumber') }} <small class="required">{{ t('required') }}</small> </h4>
                                 <p class="helper">{{ t('mustBeAlphanumeric')}}</p>  
                                 <v-text-field variant="outlined" 
                                     v-model="data.bank_account" 
@@ -253,12 +272,19 @@ const isInclude = (type, country) => {
   
 }
 
+await master.fetchCode('country')
+await master.fetchCode('coins')
+
+
 </script>
 
 <script>
 import { useT } from '~/composables/useT'
 import { useEgnyte } from "@/composables/services/egnyte.js"
 import BankAccount from '~/models/BankAccount.js'
+import {useMaster} from '~/composables/services/master'
+import { useListBanks } from '~/composables/services/list_banks'
+import { toHandlers } from 'vue'
 
 export default {
   name: 'BankAccounts',
@@ -268,7 +294,10 @@ export default {
       data: null,      
       dialog: false,
       isEditing: false,
-      items: []          
+      items: [],
+      list_banks: [],
+      all_banks: [],
+      code :''       
     }
   },
   props: {
@@ -289,6 +318,28 @@ export default {
     }
   },
   methods: { 
+    async filterOptions(){
+        this.bank_name = null
+        const filteredByCountry = this.all_banks.filter(
+            e => e.country === this.data.bank_country
+            );
+
+            this.list_banks = filteredByCountry.length > 0
+            ? filteredByCountry
+            : this.all_banks.filter(e => !e.country || e.country === '');
+
+   },
+   asignData(){
+        const dataB = this.all_banks.find(
+            e => e.name === this.data.bank_name
+            );
+        if (dataB.aba)
+            this.data.aba = dataB.aba 
+        if (dataB.coin)
+            this.data.coin = dataB.coin
+        if (dataB.bank_group)
+            this.data.bank_group = dataB.bank_group
+   },
     add(){
       this.data = new BankAccount();
       this.dialog = true;
@@ -327,14 +378,16 @@ export default {
 
       const { upload_file } = useEgnyte()
       let now = new Date()
-      let nameFile = now.toISOString().split("T")[0] + "-" + String(now.getSeconds()).padStart(2, "0") + "_" + data.bank_name
+      let nameFile = now.toISOString().split("T")[0] + "-" + String(now.getSeconds()).padStart(2, "0") + "_" + this.data.bank_name
       try {
         const res = await upload_file(
           this.code,   
           nameFile,         
           file               
         )
-        if (res.status){
+        if (res.status)
+        {
+          console.log("Egnyte", res)
           info.file_id_egnyte = res.response.group_id
         }
       } catch (err) {
@@ -348,7 +401,7 @@ export default {
     },
     headers() {
       return [
-        { title:  this.t('bankAccountCountry'), key: 'bank_country' },  
+        { title:  this.t('country'), key: 'bank_country' },  
         { title:  this.t('bank'), key: 'bank_name' },  
         { title:  this.t('currentAccountNumber'), key: 'bank_account' },
         { title: this.t('actions'), key: 'actions', align: 'end', sortable: false }  
@@ -358,7 +411,7 @@ export default {
         return {
             required: v => !!v ||  this.t('required'),
             minLength: n => v =>
-            (v && v.length >= n) || this.t('rules_minLength'),
+            (v && v.length >= n) || this.t('rules_minLength', {min: n}),
             maxLength: max => v =>
             (!v || v.length <= max) || this.t('rules_maxLength', {max}),
             email_sampol: v => (/^[^\s@]+@(sampol\.com|sampoldistribucion\.es)$/i.test(v)) || this.t('rules_emailSampol'),
@@ -367,8 +420,11 @@ export default {
         }
     }
   },
-  mounted () {
-
+  async mounted () {
+    this.code =  window.location.href.split('/').pop(); 
+    const { get_all } = useListBanks()
+    const rpta= await get_all()
+    this.all_banks = rpta?.response ?? [];
   }
 }
 

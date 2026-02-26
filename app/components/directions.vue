@@ -50,13 +50,12 @@
           </v-snackbar>
           <v-form ref="formDir">               
 
-                <h4>{{ t('sucursalName') }} <small class="required">{{ t('required') }}</small></h4>  
+                <h4>{{ t('sucursalName') }} </h4>  
                 <v-text-field 
                   variant="outlined" 
                   v-model="data.name" 
                   :placeholder="t('writeYourAnswer')" 
-                  :rules="[rules.required, rules.maxLength(40)]"
-                  required>      
+                    
                 </v-text-field>
                  <v-checkbox 
                   :label="t('principal')"
@@ -113,29 +112,30 @@
                     </v-col>
                     <v-col>
                         <h4>{{ t('country') }} <small class="required">{{ t('required') }}</small></h4>  
-                        <v-select
-                        v-model="data.country"
+ <v-autocomplete
+        chips                           v-model="data.country"
                         :placeholder="t('selectOption')"
                         :items="master.m('country')"  
                         :item-title="item => t(item.label)" 
                         item-value="value" 
                         variant="outlined"
+                        @update:modelValue="filterOptions"
                         :rules="[rules.required]"
                         required
-                        ></v-select>
+                        ></v-autocomplete>
                     </v-col>
                     <v-col>
                         <h4>{{ t('region') }} <small class="required">{{ t('required') }}</small></h4>  
-                        <v-select
-                            v-model="data.region"
+ <v-autocomplete
+        chips                               v-model="data.region"
                             :placeholder="t('selectOption')"
-                            :items="master.mFilter('regions', data.country)"  
+                            :items="list_regions"  
                             :item-title="item => t(item.label)" 
                             item-value="value" 
                             variant="outlined"
-                            :rules="[rules.required]"
-                            required
-                        ></v-select>
+                            :rules="list_regions?.length ? [rules.required] : []"
+                            :required="list_regions?.length > 0"
+                        ></v-autocomplete>
                     </v-col>
                 </v-row>   
                 <v-row>
@@ -170,10 +170,13 @@
 <script setup>
 import { useMasterStore } from '~/stores/master'
 const master = useMasterStore()
+await master.fetchCode('country')
+
 </script>
 <script>
 import { useT } from '~/composables/useT'
 import Directions from '~/models/Directions.js'
+import {useMaster} from '~/composables/services/master'
 
 
 export default {
@@ -188,7 +191,8 @@ export default {
       rules: {
         required: v => !!v ||  this.t('required'),
       },
-      show: false
+      show: false,
+      list_regions: []
     }
   },
   props: {
@@ -199,7 +203,7 @@ export default {
   },
   watch:{
     'items.length'(val) {
-      this.$emit('valid', val > 0, 'valid_dir')
+      this.$emit('valid', val > 0)
     },
     items: {
       handler (val) {
@@ -209,6 +213,11 @@ export default {
     }
   },
   methods: { 
+    async filterOptions(){
+        const master = useMaster()
+        const rpt = await master.get_all_values_filter('regions',this.data.country)
+        this.list_regions = rpt?.response ?? []
+   },
     add(){
       this.show= false;
       this.data = new Directions();
@@ -264,7 +273,7 @@ export default {
         return {
             required: v => !!v ||  this.t('required'),
             minLength: n => v =>
-            (v && v.length >= n) || this.t('rules_minLength'),
+            (v && v.length >= n) || this.t('rules_minLength', {min: n}),
             maxLength: max => v =>
             (!v || v.length <= max) || this.t('rules_maxLength', {max}),
             email_sampol: v => (/^[^\s@]+@(sampol\.com|sampoldistribucion\.es)$/i.test(v)) || this.t('rules_emailSampol'),

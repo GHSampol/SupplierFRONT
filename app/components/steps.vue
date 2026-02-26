@@ -1,5 +1,4 @@
 <template>
-  {{finish}}
     <v-row class="content_center" v-if="!finish">   
         <v-col>                        
            <v-stepper v-model="step" class="pa-4">
@@ -29,26 +28,28 @@
                         <p class="helper">
                             {{ t('readPrivacyPolicyLinkText') }} <a href="https://www.sampol.com/wp-content/uploads/2024/08/Politica-de-Privacidad-y-protecccion-de-datos-2.pdf" target="_blank">{{ t('here') }}</a>.
                         </p>
-                        <v-radio-group v-model="data_steps[1].data.acept_policy">
-                            <v-radio color="#005CB9" :label="t('yes')" value="true"></v-radio>
-                            <v-radio color="#005CB9" :label="t('no')" value="false"></v-radio>
+                        <v-radio-group v-model="info.policy">
+                            <v-radio color="#005CB9" :label="t('yes')" :value=true></v-radio>
+                            <v-radio color="#005CB9" :label="t('no')" :value=false></v-radio>
                         </v-radio-group>
                     </div>
                   </v-stepper-window-item>
                   <v-stepper-window-item :value="2" >
-                    <Supplier @valid="onStepValid" v-model="data_steps[2].data"></Supplier>
+                    <Supplier @valid="onStepValidNumberStep" v-model="info.supplier"></Supplier>
+                    
+                    <TaxDirection @valid="onStepValidNumberStep" v-model="info.directions" :country="info.supplier?.country"></TaxDirection>
                   </v-stepper-window-item>
                   <v-stepper-window-item :value="3" > 
                       <h2 class="card-title mb-9">{{ t('contactInformation') }}</h2>
-                      <Directions @valid="onStepValidNumberStep" v-model="data_steps[3].data.directions"></Directions>  
-                      <v-divider class="mt-9 mb-9 pt-9" color="white"></v-divider>                    
-                      <Contacts @valid="onStepValidNumberStep" v-model="data_steps[3].data.contacts"></Contacts>   
+                      <!-- <Directions @valid="onStepValidNumberStep" v-model="data_steps[3].data.directions"></Directions>  
+                      <v-divider class="mt-9 mb-9 pt-9" color="white"></v-divider>                     -->
+                      <Contacts @valid="onStepValid" v-model="info.contacts"></Contacts>   
                   </v-stepper-window-item>
                   <v-stepper-window-item :value="4">
-                    <BankAccounts @valid="onStepValid" v-model="data_steps[4].data"></BankAccounts>
+                    <BankAccounts @valid="onStepValid" v-model="info.bank_accounts"></BankAccounts>
                   </v-stepper-window-item>
                   <v-stepper-window-item :value="5" >
-                    <Documents @valid="onStepValid" v-model="data_steps[5].data" :email_cert="getEmailAdm" :code="this.data_steps[1].data.invitation_code"></Documents>
+                    <Documents @valid="onStepValid" v-model="info.documents" :email_cert="getEmailAdm" :code="info.invitation_code"></Documents>
                   </v-stepper-window-item>
                 </v-stepper-window>
                 <v-divider style="margin-top: 100px;"></v-divider>
@@ -76,16 +77,17 @@
                   
                   <v-btn
                     color="success"
-                    v-if="step == steps.length"
                     :disabled="disabled"
+                    v-if="step == steps.length"
                     @click="save"
+                    :loading="loadfinish"
                     class="mr-4"
                   >
                     {{t('finishAndSubmit')}}
 
                   </v-btn>  
                 </div>
-                <!-- <div class="d-flex justify-space-between mt-4 mb-6 mr-4"   v-if="disabled">
+                <div class="d-flex justify-space-between mt-4 mb-6 mr-4"   v-if="disabled">
                   <v-spacer></v-spacer>
                   <v-alert 
                     :text="t('completeFieldsNextStep')" 
@@ -94,31 +96,37 @@
                     density="compact"   
                     class="mb-2 text-caption pa-2"
                   ></v-alert>
-                </div> -->
-                <v-snackbar
-                  location="bottom"
-                  color="error"
+                </div>
+                <!-- <v-snackbar
+                  location="top"
+                  color="warning"
                   v-model="disabled"
                 >
                   <v-icon>mdi-alert-circle-outline</v-icon>
                   {{t('completeFieldsNextStep')}}                  
-                </v-snackbar>
+                </v-snackbar> -->
               </template>
             </v-stepper>
         </v-col>        
     </v-row>
     <v-row v-else>
       <v-col>
-        entree
-        <ThankCard name="Claudia"  />
-         :name="data_steps[2].data?.social_reason"
-
+        <Thankcard :supname="info.supplier?.social_reason"></Thankcard>  
       </v-col>
     </v-row>
+   
 
 </template>
 <script>
 import { useT } from '~/composables/useT'
+import {useSupplier} from '~/composables/services/supplier'
+import SupplierData from '~/models/SupplierData.js'
+import Contacts from '~/models/Contacts.js'
+import Directions from  '~/models/Directions.js'
+import BankAccount from  '~/models/BankAccount.js'
+import Documents from  '~/models/Documents.js'
+
+
 
 export default {
   name: 'Steps',
@@ -126,18 +134,27 @@ export default {
   props: [],
   data () {
     return {     
-        pol: null,
-        step: 3,
+        step: 1,
         steps: [1,2, 3, 4, 5],
         data_steps: {
-        1: {name: 'policy', valid: false, data: {'acept_policy': false, 'invitation_code': ''}},
-        2: {name: 'supplier', valid: false, data: null},
-        3: {name: 'directions_contacts', valid: false, valid_dir: false, valid_cont: false, data: {contacts : null, directions: null}},
-        4: {name: 'bank_accounts', valid: false, data: null},
-        5: {name: 'documents', valid: true, data: null}
+        1: {name: 'policy', valid: false},
+        2: {name: 'supplier', valid: false, sub_valid: {1: false, 2: false}},
+        3: {name: 'contacts', valid: false},
+        4: {name: 'bank_accounts', valid: false},
+        5: {name: 'documents', valid: true}
         },
-        code: '',
-        finish: false
+        info: {
+          "policy": null,
+          "invitation_code": "",
+          "supplier": null,
+          "contacts": null,
+          "directions": null,
+          "bank_accounts": null,
+          "documents": null
+        },
+
+        finish: false,
+        loadfinish: false
       
 
     }
@@ -146,18 +163,17 @@ export default {
    
   },
   watch: {
-    'data_steps.1.data.acept_policy'(val) {
-      this.data_steps[1].valid = (val === "true")
+    'info.policy'(val) {
+      this.data_steps[1].valid = val
     }
   },  
   methods: {  
-      
     onStepValid (isValid) {
       this.data_steps[this.step].valid = isValid
     },
-    onStepValidNumberStep (isValid, field) {
-      this.data_steps[this.step][field] = isValid
-      this.data_steps[this.step].valid = this.data_steps[this.step].valid_dir && this.data_steps[this.step].valid_cont
+    onStepValidNumberStep(isValid, subKey) {
+      this.data_steps[this.step].sub_valid[subKey] = isValid
+      this.data_steps[this.step].valid = Object.values(this.data_steps[this.step].sub_valid).every(v => v === true)
     },
     onNext (next) {
       if (this.disabled) return
@@ -166,8 +182,48 @@ export default {
     onPrev (prev) {
       prev()
     },
+    
     save(){
-      alert("save")
+      this.loadfinish = true;
+      let sup = new SupplierData().getJson(this.info.supplier, this.info.documents.any_cert,this.info.invitation_code,this.info.documents.comment,this.info.policy )
+      let cont = (this.info.contacts ?? [])
+        .map(c => new Contacts().getJson(c))
+      console.log(cont)
+      let list_dir = []
+      let dir = new Directions().getJson(this.info?.directions, true)
+      list_dir.push(dir)
+      console.log(list_dir)
+      let bank = (this.info?.bank_accounts ?? [])
+        .map(b => new BankAccount().getJson(b))
+      console.log(bank)
+      let doc = (this.info?.documents?.documents ?? [])
+        .map(x => new Documents().getJson(x))
+      console.log(doc)
+      const body = {
+        data_supplier: sup,
+        data_contacts:   cont,
+        data_directions:  list_dir,
+        data_banks:  bank,
+        data_documents:  doc
+      }
+      console.log(body)
+      const supplierApi = useSupplier()
+      supplierApi.save_data(body)
+      .then((r) => {
+          console.log(r)
+          if (r.status) {        
+            this.finish = true;
+          } else {
+            this.finish = false;
+          }
+      })
+      .catch((error) => {
+        console.log("Error al guardar: ", error)
+      })
+      .finally(() => {
+        this.loading = false;
+        this.loadfinish= false;
+      });    
     }
   },
   computed: {
@@ -175,16 +231,17 @@ export default {
       return useT().t
     },
     disabled () {     
-      return !this.data_steps[this.step].valid
+      return false
+      // return !this.data_steps[this.step].valid
     },
     getEmailAdm(){
-      if(this.data_steps[4].data)
-        return this.data_steps[4].data.find(x => x.type === "Administrativo")?.email
+      if(this.info.contacts)
+        return this.info.contacts.find(x => x.type === "Administrativo")?.email
       return ""
     },  
   },
   mounted () {
-    this.data_steps[1].data.invitation_code = window.location.href.split('/').pop(); 
+    this.info.invitation_code = window.location.href.split('/').pop(); 
 
     
   }

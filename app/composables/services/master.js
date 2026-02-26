@@ -28,8 +28,12 @@ export const useMaster = () => {
   const get_all_values_code = (code) => {
     return useApi(`/master/all_values_code?code=${code}`)
   }
+  const get_all_values_filter = (code, filter) => {
+    return useApi(`/master/all/code/${code}/filter/${filter}`)
+  }
 
   return {
+    get_all_values_filter,
     create_master,
     create_master_values,
     get_all_masters,

@@ -20,7 +20,6 @@ const loading = ref(true)
 onMounted(async () => {
   try {
     const res = await all_lang()
-    console.log(res)
     list.value = res?.response || []
     getTraductions(list.value[0])
   } catch (e) {

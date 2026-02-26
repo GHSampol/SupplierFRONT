@@ -93,7 +93,6 @@ export default {
     const invitationApi = useInvitation()
     invitationApi.get_info_invitation(code)
     .then((r) => {
-        console.log(r)
       if (r.status) {        
         this.validate = true;
       } else {

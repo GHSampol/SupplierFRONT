@@ -7,18 +7,33 @@ export const useMasterStore = defineStore('masters', () => {
   const loading = ref(false)
   const loaded = ref(false)
 
-  const { get_all_masters } = useMaster()
+  const { get_all_values_code } = useMaster()
 
-  const getAllMasters = async () => {
-    const data = await get_all_masters()
-    console.log("kfsdfd", data)
-    const response = data?.response  
+  // const getAllMasters = async () => {
+  //   const data = await get_all_masters()
+  //   const response = data?.response  
 
-    master.value = response.reduce((acc, item) => {
-      acc[item.code] = item.rel_master_values ?? []
-      return acc
-    }, {})
-}
+  //   master.value = response.reduce((acc, item) => {
+  //     acc[item.code] = item.rel_master_values ?? []
+  //     return acc
+  //   }, {})
+  // }
+
+  const fetchCode = async (code) => {
+    console.log(code)
+    if (!code) return
+    if (master.value[code]) return 
+
+    loading.value = true
+    try {
+      const data = await get_all_values_code(code)
+      console.log(data)
+      master.value[code] = data?.response?.[0]?.rel_master_values ?? []
+    } finally {
+      loading.value = false
+    }
+  }
+
 
 
   const m = (code) => master.value?.[code] || []
@@ -32,8 +47,8 @@ export const useMasterStore = defineStore('masters', () => {
     master,
     loading,
     loaded,
-    getAllMasters,
     m,
-    mFilter
+    mFilter,
+    fetchCode
   }
 })
