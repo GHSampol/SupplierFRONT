@@ -11,7 +11,7 @@
     <div class="right-card">        
       <div class="right-card-up">
         <img src="@/assets/logoLetras.png" alt="Logo Letras" class="logo-letras">
-        <h2>{{ t('supplierFormTitle') }}</h2>
+        <h2>{{ t('l_newbankaccount') }}</h2>
       </div>
       <div class="right-card-down">
         <v-btn color="primary" class="start-button" @click="startForm()" >{{ t('start') }}</v-btn>
@@ -20,7 +20,7 @@
   </div>
   <div v-else class="stepper-container" :class="{ 'animate-slide-down': animateStep, 'fade-in': animateFadeIn }">
     <transition name="slide">
-      <Steps v-show="showForm" />      
+      <StepBankAccounts v-show="showForm" />      
     </transition>
   </div>
   
@@ -31,7 +31,7 @@
 <script>
 import { useT } from '~/composables/useT'
 export default {
-  name: 'Start',
+  name: 'StartBankAccount',
   components: {},
   props: [],
   data () {

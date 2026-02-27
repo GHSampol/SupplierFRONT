@@ -35,7 +35,7 @@ export default class SupplierData {
     this.priv_policy = priv_policy=="true"? true : false
     this.cif = dato.cif ?? ''
     this.web_page = dato.web_page ?? ''
-    this.prefered_lang = dato.prefered_lang ?? 0
+    this.prefered_lang = dato.prefered_lang ?? 1
     this.sampol_mail_address = dato.sampol_mail_address ?? ''
     this.folder_id = dato.folder_id ?? ''
     this.url_certifications = dato.url_certifications ?? ''
@@ -44,6 +44,31 @@ export default class SupplierData {
     this.comment = comment ?? ''
     this.vendor_type = dato.vendor_type ?? ''
     this.treasury_group = dato.treasury_group ?? ''
+
+    return { ...this }
+  }
+  getJsonReducido(priv_policy, social_reason, cif, code, comment) {
+
+    this.person_type =  ''
+    this.name =  ''
+    this.lastname = ''
+    this.middle_name = ''
+    this.second_lastname = ''
+    this.type_cif = ''
+    this.social_reason = social_reason ?? ''
+    this.country = ''
+    this.priv_policy = priv_policy=="true"? true : false
+    this.cif = cif ?? ''
+    this.web_page =  ''
+    this.prefered_lang =  1
+    this.sampol_mail_address =  ''
+    this.folder_id =  ''
+    this.url_certifications =''
+    this.has_certifications =  false
+    this.invitation_id = code ?? ''
+    this.comment = comment ?? ''
+    this.vendor_type =''
+    this.treasury_group =  ''
 
     return { ...this }
   }

@@ -111,7 +111,7 @@
                 variant="outlined" 
                 v-model="data.cif" 
                 :placeholder="t('writeYourAnswer')" 
-                :rules="[rules.required, rules.maxLength(16)]"
+                :rules="[rules.required, rules.maxLength(16), rules.noSpacesOnly]"
                 required>
             </v-text-field>
         </v-col>
@@ -222,6 +222,7 @@ export default {
         this.typeCif = rpt?.response ?? []
         const rptaL = await master.get_all_values_filter('vendor_type', this.data.country)       
         this.list_vendor_type = rptaL?.response ?? []
+        console.log(this.list_vendor_type)
         this.showVendorType = rptaL?.status;
         if (!rptaL?.status){
           this.data.vendor_type = null
@@ -235,6 +236,7 @@ export default {
     rules() {
         return {
             required: v => !!v ||  this.t('required'),
+            noSpacesOnly: v => !/\s/.test(v)  || this.t('noSpacesOnly'),
             minLength: n => v =>
             (v && v.length >= n) || this.t('rules_minLength', {min: n}),
             maxLength: max => v =>

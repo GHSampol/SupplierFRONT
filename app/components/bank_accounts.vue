@@ -81,19 +81,18 @@
                             <v-col>
                                 <h4>{{ t('bank') }} <small class="required" v-if="list_banks?.length > 0">{{ t('required') }}</small></h4>
                                     <v-autocomplete
-                                            chips     
-                                    v-model="data.bank_name"
-                                    :placeholder="t('selectOption')"
-                                    :items="list_banks"  
-                                    :item-title="item => t(item.name)" 
-                                    item-value="name" 
-                                    variant="outlined"
-                                    :rules="list_banks?.length>0 ? [rules.required] : []"
-                                    @update:modelValue="asignData"
-
-                                    :required="list_banks?.length > 0"
-                                ></v-autocomplete>
-                                <small>{{ data.bank_group }}</small>
+                                        chips     
+                                        v-model="data.bank_name"
+                                        :placeholder="t('selectOption')"
+                                        :items="list_banks"  
+                                        :item-title="item => t(item.name)" 
+                                        item-value="name" 
+                                        variant="outlined"
+                                        :rules="list_banks?.length>0 ? [rules.required] : []"
+                                        @update:modelValue="asignData"
+                                        :required="list_banks?.length > 0"
+                                    ></v-autocomplete>
+                                <small v-if="data.bank_group"><b>{{t('Lbank_group')}}:</b>  {{ data.bank_group }}</small>
                             </v-col>
 
                             <v-col >
@@ -319,7 +318,10 @@ export default {
   },
   methods: { 
     async filterOptions(){
-        this.bank_name = null
+        this.data.bank_name = null
+        this.data.coin = null
+        this.data.bank_group = null
+        this.data.aba = null
         const filteredByCountry = this.all_banks.filter(
             e => e.country === this.data.bank_country
             );
