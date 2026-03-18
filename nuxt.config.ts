@@ -6,11 +6,12 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     public: {
-      apiBase: process.env.NUXT_PUBLIC_API_BASE || "https://suppliers-sap-api-ceevdgezcycwgne8.francecentral-01.azurewebsites.net",
-      apiToken: process.env.NUXT_PUBLIC_API_TOKEN || "SgcZHSOoT1kseAytihU0AbTiIstQU0F3MIPXssefMGUKSfIJVaqXe2O9Mr9mQDVU"
+      apiBase: process.env.API_BASE,
+      apiToken: process.env.API_TOKEN
      
     },
   },
+  ssr: false,
   build: {
     transpile: ['vuetify'],
   },
