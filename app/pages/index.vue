@@ -39,6 +39,7 @@
 <script>
 
 import { useT } from '~/composables/useT'
+import { useLanguageStore } from '~/stores/language'
 
 export default {
   name: 'Home',
@@ -75,6 +76,10 @@ export default {
             email_sampol: v => (/^[^\s@]+@(sampol\.com|sampoldistribucion\.es)$/i.test(v)) || this.t('rules_emailSampol'),
         }
     }
+  },
+  mounted() {
+    const languageStore = useLanguageStore()
+    languageStore.setLanguage({ id: 1 })
   }
 }
 
