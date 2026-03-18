@@ -20,6 +20,8 @@ export default class SupplierData {
       comment: '';
       vendor_type: ''   ;
       treasury_group: '';
+      email_company: '';
+      phone_company: '';
   }
 
   getJson(dato = {}, has_cert, code, comment, priv_policy) {
@@ -44,6 +46,8 @@ export default class SupplierData {
     this.comment = comment ?? ''
     this.vendor_type = dato.vendor_type ?? ''
     this.treasury_group = dato.treasury_group ?? ''
+    this.email_company = dato.email_company ?? ''
+    this.phone_company = dato.phone_company ?? ''
 
     return { ...this }
   }

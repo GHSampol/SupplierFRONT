@@ -140,13 +140,38 @@
             :rules="[rules.required]"
       ></v-autocomplete> 
       
+      <v-row>
+        <v-col>
+            <h4>{{ t('web') }}</h4>  
+            <v-text-field 
+              variant="outlined" 
+              v-model="data.web_page"
+              :placeholder="t('writeYourAnswer')" 
+            ></v-text-field>
+        </v-col>
+        <v-col>
+            <h4>{{ t('email_company', {type: data.person_type == 1? t('personTypePhysical') : t('personTypeLegal')}) }} <small class="required">{{ t('required') }}</small></h4>  
+            <v-text-field 
+              variant="outlined" 
+              v-model="data.email_company"
+              :placeholder="t('writeYourAnswer')" 
+              :rules="[rules.required]"
 
-      <h4>{{ t('web') }}</h4>  
-      <v-text-field 
-        variant="outlined" 
-        v-model="data.web_page"
-        :placeholder="t('writeYourAnswer')" 
-      ></v-text-field>
+            ></v-text-field>
+        </v-col>
+        <v-col>
+            <h4>{{ t('phone_company', {type: data.person_type == 1? t('personTypePhysical') : t('personTypeLegal')}) }} <small class="required">{{ t('required') }}</small></h4>  
+            <v-text-field 
+              variant="outlined" 
+              v-model="data.phone_company"
+              :placeholder="t('writeYourAnswer')" 
+              :rules="[rules.required]"
+
+            ></v-text-field>
+        </v-col>
+      </v-row>
+
+     
 
       <h4>{{ t('preferredLanguageForCommunication') }} <small class="required">{{ t('required') }}</small></h4>
       <v-radio-group v-model="data.prefered_lang">

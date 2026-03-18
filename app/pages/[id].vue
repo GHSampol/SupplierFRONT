@@ -23,6 +23,7 @@
 <script>
 import { useT } from '~/composables/useT'
 import {useInvitation} from '~/composables/services/invitation'
+import { useLanguageStore } from '~/stores/language'
 
 export default {
   name: 'Form',
@@ -51,10 +52,16 @@ export default {
     let code = window.location.href.split('/').pop(); 
     this.loading = true; 
     const invitationApi = useInvitation()
+    const languageStore = useLanguageStore()
+
+    let lang = 1;
     invitationApi.get_info_invitation(code)
     .then((r) => {
       console.log(r)
-      if (r.status) {        
+      if (r.status) {
+        
+        lang = r.response.lang? r.response.lang : 1
+     
         this.validate = true;
         if (r.response.type == 'cuenta'){
           this.type = 'cuenta'
@@ -62,7 +69,9 @@ export default {
       } else {
         this.validate = false;
         this.response = "Código no válido o no activo.";
+        lang = 1
       }
+      
     })
     .catch((error) => {
       this.validate = false;
@@ -70,6 +79,7 @@ export default {
     })
     .finally(() => {
       this.loading = false;
+      languageStore.setLanguage({ id: lang })
     });    
   }
 }
