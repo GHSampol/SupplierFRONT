@@ -155,7 +155,7 @@
               variant="outlined" 
               v-model="data.email_company"
               :placeholder="t('writeYourAnswer')" 
-              :rules="[rules.required]"
+              :rules="[rules.required, rules.email]"
 
             ></v-text-field>
         </v-col>
@@ -267,6 +267,7 @@ export default {
             maxLength: max => v =>
             (!v || v.length <= max) || this.t('rules_maxLength', {max}),
             email_sampol: v => (/^[^\s@]+@(sampol\.com|sampoldistribucion\.es)$/i.test(v)) || this.t('rules_emailSampol'),
+            email: v => /.+@.+\..+/.test(v)|| this.t('emailMustBeValid'),
         }
     }
   }

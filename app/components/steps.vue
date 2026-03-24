@@ -211,6 +211,8 @@ export default {
       supplierApi.save_data(body)
       .then((r) => {
           console.log("____", r)
+          console.log(r.status)
+          this.finish = r.status;
           if (r.status) {        
             this.finish = true;
           } else {
