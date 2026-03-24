@@ -25,4 +25,7 @@ export default defineNuxtConfig({
     },
   },
   devtools: { enabled: true },
+  $production:{
+    devtools:{enabled:true}
+  }
 })
