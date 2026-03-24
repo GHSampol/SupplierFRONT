@@ -1,8 +1,7 @@
 <template>
   
-    <v-row class="content_center" v-if="finish">   
-        <v-col>     
-          {{ finish }}                   
+    <v-row class="content_center" v-if="!finish">   
+        <v-col>                  
            <v-stepper v-model="step" class="pa-4">
               <template v-slot:default="{ prev, next }">
                 <v-stepper-header class="stepperConfig">
@@ -112,8 +111,7 @@
         </v-col>        
     </v-row>
     <v-row v-else>
-      <v-col>
-        {{ finish }}
+      <v-col>       
         <ThankCard :supname="info?.supplier?.social_reason? info.supplier?.social_reason: ''"></ThankCard>  
       </v-col>
     </v-row>
@@ -208,18 +206,10 @@ export default {
         data_banks:  bank,
         data_documents:  doc
       }
-      console.log(body)
       const supplierApi = useSupplier()
       supplierApi.save_data(body)
       .then((r) => {
-          console.log("____", r)
-          console.log(r.status)
-          this.finish = r.status;
-          if (r.status) {        
-            this.finish = true;
-          } else {
-            this.finish = false;
-          }
+          this.finish = r.status;        
       })
       .catch((error) => {
         console.log("Error al guardar: ", error)
