@@ -210,7 +210,7 @@ export default {
       const supplierApi = useSupplier()
       supplierApi.save_data(body)
       .then((r) => {
-          console.log(r)
+          console.log("____", r)
           if (r.status) {        
             this.finish = true;
           } else {
@@ -231,8 +231,7 @@ export default {
       return useT().t
     },
     disabled () {     
-      return false
-      // return !this.data_steps[this.step].valid
+      return !this.data_steps[this.step].valid
     },
     getEmailAdm(){
       if(this.info.contacts)

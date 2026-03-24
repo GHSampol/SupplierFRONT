@@ -18,15 +18,15 @@ const loading = ref(true)
 
 
 onMounted(async () => {
-  // try {
-  //   const res = await all_lang()
-  //   list.value = res?.response || []
-  //   getTraductions(list.value[0])
-  // } catch (e) {
-  //   console.error('Error cargando módulos:', e)
-  // } finally {
-  //   loading.value = false
-  // }
+  try {
+    const res = await all_lang()
+    list.value = res?.response || []
+    // getTraductions(list.value[0])
+  } catch (e) {
+    console.error('Error cargando módulos:', e)
+  } finally {
+    loading.value = false
+  }
 })
 
 const getTraductions = (lang) => {

@@ -99,8 +99,8 @@ h3{
 }
 
 .stepperConfig{
-  box-shadow: none; 
-  border-radius: 12px;
+  box-shadow: none !important; 
+  border-radius: 12px !important;
   width: 80%; 
   margin: 0 auto;
 
