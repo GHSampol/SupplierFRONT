@@ -15,7 +15,6 @@ import logoLetras from '@/assets/logoLetras.png';
 import { useT } from '~/composables/useT'
 
 export default {
-  name: 'ThankCard',
   props: {
     supname: {
       type: String

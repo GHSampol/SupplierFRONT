@@ -1,6 +1,6 @@
 <template>
   
-    <v-row class="content_center" v-if="!finish">   
+    <v-row class="content_center" v-if="finish">   
         <v-col>     
           {{ finish }}                   
            <v-stepper v-model="step" class="pa-4">
@@ -114,7 +114,7 @@
     <v-row v-else>
       <v-col>
         {{ finish }}
-        <Thankcard :supname="info.supplier?.social_reason? info.supplier?.social_reason: ''"></Thankcard>  
+        <ThankCard :supname="info?.supplier?.social_reason? info.supplier?.social_reason: ''"></ThankCard>  
       </v-col>
     </v-row>
   
